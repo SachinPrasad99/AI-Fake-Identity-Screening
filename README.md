@@ -413,3 +413,12 @@ Before the dashboard unlocks, enter your authorized operator credentials:
 3. **Facial Biometric Matching:** Integrating face detection to compare the document portrait against a live webcam capture with active liveness verification (blink/smile detection).
 4. **On-Device Edge Inference:** Quantizing OCR and classification models to ONNX / TFLite runtimes for direct deployment on mobile devices and edge appliances.
 5. **PDF & Multi-Page Document Support:** Expanding document ingestion to handle multi-page scanned PDF documents and digital signatures.
+
+---
+
+## 16. ## Project Contributors
+
+- Sachin Brijnath Prasad (https://github.com/SachinPrasad99)
+- Srushti Sambhaji Patil (https://github.com/srushtupatil359)
+- Sakshi Madan Sutar (https://github.com/SakshiSutar)
+- Samiksha Rahul Shinde (https://github.com/SamikshaShinde)
