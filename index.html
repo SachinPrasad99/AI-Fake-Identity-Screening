@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Based Fake Identity & Document Screening System</title>
+    <link rel="stylesheet" href="style.css?v=2.0.1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ================= AUTHENTICATION / SIGN IN OVERLAY ================= -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="brand-logo auth-logo-center">
+                    <span class="logo-shield">🛡️</span>
+                    <div class="logo-text">
+                        <h2>ID-SCREEN<span class="highlight">.AI</span></h2>
+                        <span class="version-tag">Preliminary Screening</span>
+                    </div>
+                </div>
+                <h3>Inspector Sign In</h3>
+                <p class="auth-subtitle">Authorized identity & document preliminary screening terminal</p>
+                <div class="auth-health-badge" id="authHealthBadge">
+                    <span class="pulse-dot" id="authPulse"></span>
+                    <span id="authStatusText">Checking Backend Connection...</span>
+                </div>
+            </div>
+
+            <!-- Auth Mode Switch Tabs -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tabSignIn">Sign In</button>
+                <button type="button" class="auth-tab" id="tabRegister">Create New ID</button>
+            </div>
+
+            <div id="loginAlert" class="auth-alert hidden"></div>
+
+            <!-- 1. Sign In Form -->
+            <form id="loginForm" class="auth-form" autocomplete="off">
+                <div class="auth-field">
+                    <label for="loginUsername">Operator / Inspector ID</label>
+                    <div class="auth-input-group">
+                        <span class="auth-icon">👤</span>
+                        <input type="text" id="loginUsername" placeholder="e.g. admin" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="loginPassword">Security Password</label>
+                    <div class="auth-input-group">
+                        <span class="auth-icon">🔒</span>
+                        <input type="password" id="loginPassword" placeholder="Enter password" required autocomplete="current-password">
+                        <button type="button" id="togglePasswordBtn" class="auth-toggle-pwd" title="Show/Hide Password">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" id="loginBtn" class="auth-btn-primary">
+                    <span id="loginBtnText">Sign In to Dashboard</span>
+                    <span id="loginBtnSpinner" class="spinner hidden"></span>
+                </button>
+
+                <!-- Quick Demo Auto-fill Helper -->
+                <div class="demo-login-box">
+                    <div class="demo-login-top">
+                        <span class="demo-badge">💡 Demo Credentials</span>
+                        <button type="button" id="quickFillBtn" class="quick-fill-btn">Auto-Fill</button>
+                    </div>
+                    <p class="demo-cred-text">ID: <code>admin</code> &nbsp;|&nbsp; Password: <code>admin123</code></p>
+                </div>
+            </form>
+
+            <!-- 2. Registration Form (Create New ID) -->
+            <form id="registerForm" class="auth-form hidden" autocomplete="off">
+                <div class="auth-field">
+                    <label for="regUsername">Choose Operator / Inspector ID</label>
+                    <div class="auth-input-group">
+                        <span class="auth-icon">👤</span>
+                        <input type="text" id="regUsername" placeholder="e.g. rahul (letters & numbers)" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="regDisplayName">Full Name / Display Name</label>
+                    <div class="auth-input-group">
+                        <span class="auth-icon">🏷️</span>
+                        <input type="text" id="regDisplayName" placeholder="e.g. Rahul Sharma" required autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="regPassword">Set Password</label>
+                    <div class="auth-input-group">
+                        <span class="auth-icon">🔒</span>
+                        <input type="password" id="regPassword" placeholder="Minimum 4 characters" required autocomplete="new-password">
+                        <button type="button" id="toggleRegPasswordBtn" class="auth-toggle-pwd" title="Show/Hide Password">👁️</button>
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="regConfirmPassword">Confirm Password</label>
+                    <div class="auth-input-group">
+                        <span class="auth-icon">✔️</span>
+                        <input type="password" id="regConfirmPassword" placeholder="Re-enter password" required autocomplete="new-password">
+                    </div>
+                </div>
+
+                <button type="submit" id="registerBtn" class="auth-btn-primary">
+                    <span id="registerBtnText">Create Operator Account</span>
+                    <span id="registerBtnSpinner" class="spinner hidden"></span>
+                </button>
+            </form>
+
+            <div class="auth-card-footer">
+                <span>🔒 100% Offline Local Processing • No Cloud Transmission</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer">
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <span class="logo-shield">🛡️</span>
+                    <div class="logo-text">
+                        <h2>ID-SCREEN<span class="highlight">.AI</span></h2>
+                        <span class="version-tag">Preliminary Screening</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#screen" class="nav-item" data-section="screen">
+                    <span class="nav-icon">📄</span>
+                    <span>Screen Document</span>
+                </a>
+                <a href="#results" class="nav-item" data-section="results">
+                    <span class="nav-icon">📋</span>
+                    <span>Results</span>
+                </a>
+                <a href="#reports" class="nav-item" data-section="reports">
+                    <span class="nav-icon">📁</span>
+                    <span>Reports / History</span>
+                </a>
+                <a href="#about" class="nav-item" data-section="about">
+                    <span class="nav-icon">ℹ️</span>
+                    <span>About System</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-health-box">
+                    <div class="health-header">
+                        <span class="pulse-dot" id="systemPulse"></span>
+                        <span class="health-title" id="systemStatusText">Checking Backend...</span>
+                    </div>
+                    <p class="health-sub">Flask API • Local Processing</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ================= MAIN CONTENT ================= -->
+        <main class="main-content">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h1 id="pageTitle">System Dashboard</h1>
+                    <p id="pageSubtitle">Real-time overview of document screening activities and system status</p>
+                </div>
+                <div class="topbar-right">
+                    <div class="user-session-pill" id="userSessionPill">
+                        <span class="session-avatar">👤</span>
+                        <span class="session-name" id="sessionUserName">Admin</span>
+                        <button id="logoutBtn" class="btn-logout" title="Sign out of system">Sign Out</button>
+                    </div>
+                    <span class="cyber-shield-badge"><span class="pulse-cyber-dot"></span>🛡️ Forensic Defense Active</span>
+                    <span class="disclaimer-badge">Preliminary Screening Only</span>
+                </div>
+            </header>
+
+            <div class="content-container">
+                <!-- ================= 1. DASHBOARD SECTION ================= -->
+                <section id="section-dashboard" class="view-section active">
+                    <!-- KPI Metric Cards -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon total-icon">📂</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Total Screened</span>
+                                <h3 class="metric-value" id="kpiTotalScreened">0</h3>
+                                <span class="metric-trend">Total documents analyzed</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon normal-icon">✅</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Normal Screenings</span>
+                                <h3 class="metric-value normal-text" id="kpiNormalScreenings">0</h3>
+                                <span class="metric-trend">Consistent with format</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon review-icon">⚠️</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Needs Review</span>
+                                <h3 class="metric-value review-text" id="kpiReviewScreenings">0</h3>
+                                <span class="metric-trend">Flagged for manual review</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon status-icon">⚡</div>
+                            <div class="metric-info">
+                                <span class="metric-label">System Status</span>
+                                <h3 class="metric-value" id="kpiSystemStatus">Online</h3>
+                                <span class="metric-trend" id="kpiBackendInfo">Local Flask Server</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action & Latest Screening Grid -->
+                    <div class="dashboard-split">
+                        <div class="dashboard-panel quick-screen-panel">
+                            <div class="panel-header">
+                                <h3>Quick Document Screening</h3>
+                                <p>Begin screening a dummy or sample identity document</p>
+                            </div>
+                            <div class="quick-screen-cta">
+                                <div class="shield-illustration">🔍</div>
+                                <h4>Ready to screen a document?</h4>
+                                <p>Supports Aadhaar, PAN, Passport, Driving Licence, Voter ID, Student ID, and Employee ID samples.</p>
+                                <button class="btn btn-primary" onclick="navigateTo('screen')">Go to Document Screening &rarr;</button>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-panel latest-screening-panel">
+                            <div class="panel-header">
+                                <h3>Latest Screening Activity</h3>
+                                <p>Recent document evaluated</p>
+                            </div>
+                            <div id="latestScreeningBox" class="latest-screening-content">
+                                <div class="empty-state-mini">
+                                    <span>📄</span>
+                                    <p>No documents screened yet. Upload your first document to see live results here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 2. SCREEN DOCUMENT SECTION ================= -->
+                <section id="section-screen" class="view-section">
+                    <div class="upload-container">
+                        <div class="upload-header">
+                            <h2>Upload Sample Document Image</h2>
+                            <p>Upload a dummy document image (JPG, JPEG, PNG) to initiate automated preliminary screening.</p>
+                        </div>
+
+                        <!-- Drag and Drop Box -->
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" id="fileInput" accept=".jpg,.jpeg,.png" style="display: none;">
+                            <div class="drop-zone-content" id="dropZonePrompt">
+                                <div class="upload-cloud-icon">☁️</div>
+                                <h3>Drag & Drop document image here</h3>
+                                <p>or <button type="button" class="browse-link" id="browseBtn">browse files from your computer</button></p>
+                                <span class="file-spec-hint">Supports JPG, JPEG, PNG • Maximum size: 16 MB</span>
+                            </div>
+
+                            <!-- Image Preview Area -->
+                            <div class="preview-area" id="previewArea" style="display: none;">
+                                <div class="preview-thumb-box">
+                                    <img id="previewImg" src="" alt="Document Preview">
+                                </div>
+                                <div class="preview-meta">
+                                    <h4 id="previewFileName">filename.jpg</h4>
+                                    <p id="previewFileSize">0 KB</p>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="removeFileBtn">Choose Different Image</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar (Hidden during idle) -->
+                        <div class="screening-progress" id="screeningProgress" style="display: none;">
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill" id="progressBarFill"></div>
+                            </div>
+                            <div class="progress-status-row">
+                                <span id="progressStepText">Initializing pipeline...</span>
+                                <span id="progressPercentText">0%</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="upload-actions">
+                            <button type="button" class="btn btn-primary btn-lg" id="startScreenBtn" disabled>
+                                <span class="btn-icon">⚡</span> Start Preliminary Screening
+                            </button>
+                        </div>
+
+                        <!-- Compliance & Testing Note -->
+                        <div class="screening-notice-box">
+                            <span class="notice-icon">ℹ️</span>
+                            <div>
+                                <strong>Testing Guidelines:</strong>
+                                <p>Please use dummy/sample documents for evaluation. All image parsing and OCR processing runs locally on your machine and is never sent to external cloud APIs.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 3. RESULTS SECTION ================= -->
+                <section id="section-results" class="view-section">
+                    <div id="resultsPlaceholder" class="empty-state-large">
+                        <div class="empty-icon">📋</div>
+                        <h3>No Screening Results Available</h3>
+                        <p>Upload and screen a document to inspect comprehensive OCR text, format validation, and consistency checks.</p>
+                        <button class="btn btn-primary" onclick="navigateTo('screen')">Screen a Document Now</button>
+                    </div>
+
+                    <div id="resultsContent" style="display: none;">
+                        <!-- Primary Verdict Banner -->
+                        <div class="verdict-banner" id="verdictBanner">
+                            <div class="verdict-main">
+                                <div class="verdict-badge-box">
+                                    <span class="verdict-badge" id="verdictBadge">Normal</span>
+                                </div>
+                                <div class="verdict-info">
+                                    <h2 id="verdictHeading">Preliminary Screening Completed</h2>
+                                    <p id="verdictSummary">Summary message goes here...</p>
+                                </div>
+                            </div>
+                            <div class="verdict-actions">
+                                <button class="btn btn-secondary" onclick="navigateTo('screen')">Screen Another</button>
+                            </div>
+                        </div>
+
+                        <!-- Reasons for Review Card (Only shown if Needs Review) -->
+                        <div class="results-card review-reasons-card" id="reviewReasonsBox" style="display: none;">
+                            <div class="card-title">
+                                <span class="card-icon red">⚠️</span>
+                                <div>
+                                    <h3>Reasons for Manual Review</h3>
+                                    <p>The following potential irregularities or anomalies were flagged during screening:</p>
+                                </div>
+                            </div>
+                            <ul class="reasons-list" id="reasonsList"></ul>
+                        </div>
+
+                        <!-- Results Multi-Column Grid -->
+                        <div class="results-grid">
+                            <!-- Card 1: Document Classification -->
+                            <div class="results-card">
+                                <div class="card-title">
+                                    <span class="card-icon">📄</span>
+                                    <div>
+                                        <h3>Document Category</h3>
+                                        <p>Algorithmic type classification</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="highlight-row">
+                                        <span class="label">Identified Type</span>
+                                        <strong class="value large-text" id="resDocType">-</strong>
+                                    </div>
+                                    <div class="highlight-row">
+                                        <span class="label">Type Confidence</span>
+                                        <span class="value" id="resDocConfidence">-</span>
+                                    </div>
+                                    <div class="keywords-box">
+                                        <span class="label">Detected Keywords & Patterns:</span>
+                                        <div class="tags-container" id="resKeywordsTags"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: OCR Extraction Overview -->
+                            <div class="results-card">
+                                <div class="card-title">
+                                    <span class="card-icon">🔍</span>
+                                    <div>
+                                        <h3>OCR Text Extraction</h3>
+                                        <p>Optical character recognition metrics</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="highlight-row">
+                                        <span class="label">Average OCR Confidence</span>
+                                        <strong class="value" id="resOcrConfidence">-</strong>
+                                    </div>
+                                    <div class="confidence-bar-track">
+                                        <div class="confidence-bar-fill" id="resOcrBar"></div>
+                                    </div>
+                                    <div class="highlight-row">
+                                        <span class="label">Lines Extracted</span>
+                                        <span class="value" id="resOcrLineCount">-</span>
+                                    </div>
+                                    <button class="btn btn-outline btn-sm" id="toggleRawTextBtn" onclick="toggleRawText()">View Raw Extracted Text</button>
+                                    <div class="raw-text-drawer" id="rawTextDrawer" style="display: none;">
+                                        <pre id="rawTextContent"></pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Structural Format Validation -->
+                            <div class="results-card">
+                                <div class="card-title">
+                                    <span class="card-icon">📐</span>
+                                    <div>
+                                        <h3>Format Validation</h3>
+                                        <p>Pattern-based syntax checks only</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="resFormatValidations" class="validation-items-list"></div>
+                                </div>
+                            </div>
+
+                            <!-- Card 4: Detected Identity Fields -->
+                            <div class="results-card">
+                                <div class="card-title">
+                                    <span class="card-icon">👤</span>
+                                    <div>
+                                        <h3>Detected Fields</h3>
+                                        <p>Demographic & identity attributes</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="fields-table" id="resDetectedFields"></div>
+                                </div>
+                            </div>
+
+                            <!-- Card 5: Consistency Checks -->
+                            <div class="results-card">
+                                <div class="card-title">
+                                    <span class="card-icon">⚖️</span>
+                                    <div>
+                                        <h3>Consistency Checks</h3>
+                                        <p>Logical cross-field validation</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="resConsistencyChecks" class="consistency-items-list"></div>
+                                </div>
+                            </div>
+
+                            <!-- Card 6: Image Quality & Anomaly Checks -->
+                            <div class="results-card">
+                                <div class="card-title">
+                                    <span class="card-icon">🖼️</span>
+                                    <div>
+                                        <h3>Image Quality & Anomalies</h3>
+                                        <p>Resolution, blur, and proportion screening</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="highlight-row">
+                                        <span class="label">Overall Quality</span>
+                                        <span class="badge" id="resQualityBadge">-</span>
+                                    </div>
+                                    <div class="highlight-row">
+                                        <span class="label">Dimensions</span>
+                                        <span class="value" id="resDimensions">-</span>
+                                    </div>
+                                    <div class="highlight-row">
+                                        <span class="label">Sharpness Score</span>
+                                        <span class="value" id="resBlurScore">-</span>
+                                    </div>
+                                    <div class="highlight-row">
+                                        <span class="label">Brightness Level</span>
+                                        <span class="value" id="resBrightnessLevel">-</span>
+                                    </div>
+                                    <div class="anomaly-status-box" id="resAnomalyBox">
+                                        <span class="label">Non-Forensic Anomalies:</span>
+                                        <div id="resAnomalyContent">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 7: Forensic & Cryptographic Integrity Suite (Cybersecurity Defense) -->
+                            <div class="results-card forensic-cyber-card" id="forensicCard">
+                                <div class="card-title">
+                                    <span class="card-icon cyber-shield-icon">🛡️</span>
+                                    <div>
+                                        <div class="cyber-card-header-badge">
+                                            <h3>Forensic & Cryptographic Integrity</h3>
+                                            <span class="cyber-live-tag">ACTIVE SHIELD</span>
+                                        </div>
+                                        <p>Dihedral D₅ checksum, PAN semantics, Error Level Analysis (ELA) & QR cross-verification</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Forensic Top Summary -->
+                                    <div class="cyber-summary-row">
+                                        <div class="cyber-stat-box">
+                                            <span class="cyber-stat-label">Forensic Defense Status</span>
+                                            <div class="cyber-stat-val">
+                                                <span class="badge badge-cyber" id="resForensicStatusBadge">Passed</span>
+                                            </div>
+                                        </div>
+                                        <div class="cyber-stat-box">
+                                            <span class="cyber-stat-label">Cryptographic Integrity Score</span>
+                                            <div class="cyber-stat-val cyber-score-val" id="resForensicScore">95%</div>
+                                        </div>
+                                        <div class="cyber-stat-box">
+                                            <span class="cyber-stat-label">Anti-Tampering Engine</span>
+                                            <div class="cyber-stat-val cyber-text-neon">100% Offline Forensic</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4 Modular Forensic Check Cards -->
+                                    <div class="forensic-subgrid">
+                                        <!-- Check 1: Verhoeff Checksum -->
+                                        <div class="forensic-check-tile" id="tileVerhoeff">
+                                            <div class="tile-header">
+                                                <span class="tile-icon">🔢</span>
+                                                <div class="tile-title-group">
+                                                    <strong>Verhoeff Checksum (D₅)</strong>
+                                                    <span class="tile-desc">Aadhaar 12th Check Digit</span>
+                                                </div>
+                                                <span class="badge" id="badgeVerhoeff">Passed</span>
+                                            </div>
+                                            <p class="tile-msg" id="msgVerhoeff">Dihedral group D5 mathematical checksum verified.</p>
+                                        </div>
+
+                                        <!-- Check 2: PAN Semantic & Surname Cross-Check -->
+                                        <div class="forensic-check-tile" id="tilePanSemantics">
+                                            <div class="tile-header">
+                                                <span class="tile-icon">🪪</span>
+                                                <div class="tile-title-group">
+                                                    <strong>PAN Semantic Cross-Check</strong>
+                                                    <span class="tile-desc">Tax Entity & Surname Initial</span>
+                                                </div>
+                                                <span class="badge" id="badgePanSemantics">Passed</span>
+                                            </div>
+                                            <p class="tile-msg" id="msgPanSemantics">Entity category and surname 5th-char initial verified.</p>
+                                        </div>
+
+                                        <!-- Check 3: ELA Digital Tampering -->
+                                        <div class="forensic-check-tile" id="tileEla">
+                                            <div class="tile-header">
+                                                <span class="tile-icon">🔬</span>
+                                                <div class="tile-title-group">
+                                                    <strong>Error Level Analysis (ELA)</strong>
+                                                    <span class="tile-desc">Photoshop & Splicing Detection</span>
+                                                </div>
+                                                <span class="badge" id="badgeEla">Passed</span>
+                                            </div>
+                                            <div class="ela-progress-box">
+                                                <div class="ela-label-row">
+                                                    <span>Tampering Risk Score:</span>
+                                                    <strong id="elaRiskScore">6.5%</strong>
+                                                </div>
+                                                <div class="ela-bar-track">
+                                                    <div class="ela-bar-fill" id="elaBarFill" style="width: 7%;"></div>
+                                                </div>
+                                            </div>
+                                            <p class="tile-msg" id="msgEla">Uniform compression variance. No localized digital splicing detected.</p>
+                                        </div>
+
+                                        <!-- Check 4: QR Code Cross-Verification -->
+                                        <div class="forensic-check-tile" id="tileQrCode">
+                                            <div class="tile-header">
+                                                <span class="tile-icon">📱</span>
+                                                <div class="tile-title-group">
+                                                    <strong>Machine-Readable QR Integrity</strong>
+                                                    <span class="tile-desc">2D Barcode Payload vs OCR</span>
+                                                </div>
+                                                <span class="badge" id="badgeQrCode">No QR</span>
+                                            </div>
+                                            <p class="tile-msg" id="msgQrCode">No machine-readable QR code detected on card face.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Forensic Audit Trail -->
+                                    <div class="forensic-audit-box">
+                                        <div class="audit-header">
+                                            <span>⚡ Forensic Audit Findings:</span>
+                                        </div>
+                                        <ul class="forensic-findings-list" id="resForensicFindingsList">
+                                            <li>Initializing forensic modules...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Disclaimer Banner -->
+                        <div class="disclaimer-callout">
+                            <span class="disclaimer-icon">⚖️</span>
+                            <div class="disclaimer-text">
+                                <strong>PRELIMINARY SCREENING NOTICE</strong>
+                                <p id="resDisclaimer">This screening result is produced by an automated algorithmic screening tool for preliminary evaluation. It does NOT claim to prove legal document authenticity or detect forensic forgery.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 4. REPORTS / HISTORY SECTION ================= -->
+                <section id="section-reports" class="view-section">
+                    <div class="reports-header-row">
+                        <div>
+                            <h2>Screening Reports & History</h2>
+                            <p>Locally stored document screening records</p>
+                        </div>
+                        <div class="reports-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="clearAllReports()">Clear All Reports</button>
+                        </div>
+                    </div>
+
+                    <div class="reports-table-card">
+                        <table class="reports-table">
+                            <thead>
+                                <tr>
+                                    <th>Report ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Filename</th>
+                                    <th>Document Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                                <tr>
+                                    <td colspan="6" class="table-empty">No reports saved yet. Completed screenings will appear here.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ================= 5. ABOUT SYSTEM SECTION ================= -->
+                <section id="section-about" class="view-section">
+                    <div class="about-grid">
+                        <div class="about-card main-about-card">
+                            <h2>AI-Based Fake Identity & Document Screening System</h2>
+                            <p class="about-lead">An educational, software-only computer vision screening framework designed to perform preliminary document analysis using Optical Character Recognition (OCR), heuristic format checking, and non-forensic image quality assessment.</p>
+
+                            <div class="workflow-steps-container">
+                                <h3>Automated Screening Workflow</h3>
+                                <div class="workflow-steps">
+                                    <div class="step-item">
+                                        <span class="step-num">01</span>
+                                        <h4>Upload & Validation</h4>
+                                        <p>Validates file type (JPG/PNG), size (max 16MB), and verifies image pixel data with OpenCV.</p>
+                                    </div>
+                                    <div class="step-item">
+                                        <span class="step-num">02</span>
+                                        <h4>OCR Extraction</h4>
+                                        <p>Preprocesses document (grayscale, CLAHE contrast, noise reduction) and extracts text via EasyOCR.</p>
+                                    </div>
+                                    <div class="step-item">
+                                        <span class="step-num">03</span>
+                                        <h4>Classification & Formats</h4>
+                                        <p>Identifies document category and verifies expected structural syntax (PAN, 12-digit, etc.).</p>
+                                    </div>
+                                    <div class="step-item">
+                                        <span class="step-num">04</span>
+                                        <h4>Consistency & Quality</h4>
+                                        <p>Validates field presence, date ranges, image blur/sharpness, and non-forensic capture anomalies.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="about-legal-notice">
+                                <h4>Important Project Disclaimer</h4>
+                                <p>This application is developed strictly as a <strong>preliminary screening and educational tool</strong>. It does not connect to legal government databases, does not upload personal data to cloud services, and does not claim to definitively prove document genuineness or forgery.</p>
+                            </div>
+                        </div>
+
+                        <div class="about-card tech-stack-card">
+                            <h3>Technology Architecture</h3>
+                            <ul class="tech-list">
+                                <li>
+                                    <strong>Frontend</strong>
+                                    <span>HTML5, Modern CSS3, Vanilla JavaScript (Zero bloated frameworks)</span>
+                                </li>
+                                <li>
+                                    <strong>Backend API</strong>
+                                    <span>Python 3, Flask, Flask-CORS, Werkzeug</span>
+                                </li>
+                                <li>
+                                    <strong>OCR Engine</strong>
+                                    <span>EasyOCR (PyTorch-based Deep Learning Text Recognition)</span>
+                                </li>
+                                <li>
+                                    <strong>Computer Vision</strong>
+                                    <span>OpenCV (CLAHE, Laplacian variance, morphology), NumPy</span>
+                                </li>
+                                <li>
+                                    <strong>Screening Architecture</strong>
+                                    <span>Rule-based heuristics, format pattern regex, demographic consistency checks</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js?v=2.0.1"></script>
+</body>
+</html>
